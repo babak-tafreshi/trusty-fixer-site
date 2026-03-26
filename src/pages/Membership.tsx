@@ -26,7 +26,7 @@ const plans: Plan[] = [
       { text: "2 Handyman Hours Annually", included: true },
       { text: "Member Discount on Add-ons (5%)", included: true },
       { text: "Digital Service Report", included: true },
-      { text: "Priority Scheduling", included: true },
+      { text: "Priority Scheduling", included: false },
       { text: "HVAC, Electrical, Plumbing Checkups", included: false },
     ],
   },
@@ -42,6 +42,19 @@ const plans: Plan[] = [
       { text: "Digital Service Report", included: true },
       { text: "Priority Scheduling", included: true },
       { text: "HVAC, Electrical, Plumbing Checkups", included: true, note: "Spring Only" },
+    ],
+  },
+  {
+    name: "Elite Care",
+    price: "$199",
+    features: [
+      { text: "Seasonal Inspections", included: true },
+      { text: "Seasonal Maintenance", included: true },
+      { text: "12 Handyman Hours Annually", included: true },
+      { text: "Member Discount on Add-ons (15%)", included: true },
+      { text: "Digital Service Report", included: true },
+      { text: "Priority Scheduling", included: true },
+      { text: "HVAC, Electrical, Plumbing Checkups", included: true, note: "Spring & Fall" },
     ],
   },
 ];
@@ -78,7 +91,7 @@ const MembershipPage = () => {
       {/* Pricing */}
       <section className="bg-section-bg py-20">
         <div className="container">
-          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
             {plans.map((plan) => (
               <div
                 key={plan.name}
