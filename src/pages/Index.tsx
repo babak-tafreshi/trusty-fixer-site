@@ -9,22 +9,22 @@ import { toast } from "sonner";
 
 const services = [
   {
+    icon: Shield,
+    title: "Renovations & Construction",
+    description: "Major and minor renovations, new builds, and remodeling projects handled with precision.",
+    link: "/renovations",
+  },
+  {
     icon: Home,
-    title: "Home Maintenance",
-    description: "Comprehensive maintenance services to keep your home in perfect condition year-round.",
-    link: "/services",
+    title: "Maintenance Membership",
+    description: "Seasonal maintenance plans to protect your home year-round with preventive care.",
+    link: "/membership",
   },
   {
     icon: Wrench,
     title: "Handyman Services",
-    description: "Skilled professionals for repairs, installations, and everyday fixes around your home.",
-    link: "/handyman-plans",
-  },
-  {
-    icon: Shield,
-    title: "Renovations & Construction",
-    description: "Major and minor renovations, new builds, and remodeling projects handled with precision.",
-    link: "/services",
+    description: "Skilled professionals for on-demand repairs, installations, and everyday fixes.",
+    link: "/handyman",
   },
 ];
 

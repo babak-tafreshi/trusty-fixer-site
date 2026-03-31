@@ -46,9 +46,10 @@ const Footer = () => {
             <h4 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider text-secondary">Quick Links</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                { label: "Services", href: "/services" },
-                { label: "Handyman Plans", href: "/handyman-plans" },
-                { label: "Membership", href: "/membership" },
+                { label: "Renovations", href: "/renovations" },
+                { label: "Maintenance Membership", href: "/membership" },
+                { label: "Handyman Services", href: "/handyman" },
+                { label: "Membership Terms", href: "/membership/terms" },
                 { label: "Contact", href: "/contact" },
               ].map((link) => (
                 <li key={link.href}>
