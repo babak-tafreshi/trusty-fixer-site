@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { z } from "zod";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,28 +9,62 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Phone, Mail, Clock, MapPin } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useDocumentHead } from "@/hooks/useDocumentHead";
+
+const baseSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email").max(255),
+  phone: z.string().trim().min(7, "Phone is required").max(30),
+});
 
 const ContactPage = () => {
+  useDocumentHead({
+    title: "Contact Home Fixers Ltd. | Ontario Renovations & Maintenance",
+    description: "Contact Home Fixers Ltd. for renovations, maintenance memberships, and handyman services across the GTA and Ontario.",
+    canonical: "https://trusty-fixer-site.lovable.app/contact",
+  });
+
+  const [params] = useSearchParams();
+  const initialType = params.get("type");
+
+  const tabFromType = (t: string | null) => {
+    if (t === "handyman" || t === "book") return "handyman";
+    if (t === "membership") return "membership";
+    return "general";
+  };
+
+  const [tab, setTab] = useState(tabFromType(initialType));
   const [submitted, setSubmitted] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTab(tabFromType(initialType));
+  }, [initialType]);
 
   const handleSubmit = (formName: string) => (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Thank you! We'll be in touch shortly.");
+    const data = Object.fromEntries(new FormData(e.target as HTMLFormElement));
+    const r = baseSchema.safeParse(data);
+    if (!r.success) {
+      toast.error(r.error.errors[0]?.message || "Please review your inputs");
+      return;
+    }
+    toast.success("Thanks! We'll be in touch within one business day.");
     setSubmitted(formName);
+    (e.target as HTMLFormElement).reset();
     setTimeout(() => setSubmitted(null), 3000);
   };
 
   return (
     <Layout>
-      <section className="bg-heading py-16 md:py-24">
-        <div className="container text-center">
-          <h1 className="text-3xl font-extrabold text-secondary sm:text-4xl md:text-5xl">
-            Contact <span className="text-primary">Us</span>
+      <section className="relative isolate overflow-hidden bg-gradient-hero py-20 md:py-28">
+        <div className="absolute inset-0 grid-pattern opacity-40" aria-hidden />
+        <div className="container relative text-center animate-fade-in-up">
+          <h1 className="font-display text-4xl font-extrabold text-secondary md:text-5xl lg:text-6xl">
+            Get in <span className="text-gradient-primary">Touch</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-secondary/70">
-            Get in touch for a free quote or to learn more about our services.
+          <p className="mx-auto mt-4 max-w-2xl text-secondary/75">
+            Request a quote, book a service, or ask us about membership — we usually reply within one business day.
           </p>
         </div>
       </section>
@@ -35,9 +72,8 @@ const ContactPage = () => {
       <section className="py-20">
         <div className="container">
           <div className="grid gap-12 lg:grid-cols-3">
-            {/* Contact Info */}
             <div className="space-y-6">
-              <h2 className="text-xl font-bold">Get In Touch</h2>
+              <h2 className="font-display text-xl font-bold">Contact information</h2>
               {[
                 { icon: Phone, label: "Phone", value: "(123) 456-7890" },
                 { icon: Mail, label: "Email", value: "info@homefixers.ca" },
@@ -45,104 +81,101 @@ const ContactPage = () => {
                 { icon: MapPin, label: "Location", value: "Ontario, Canada" },
               ].map((item) => (
                 <div key={item.label} className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                     <item.icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{item.label}</p>
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">{item.value}</p>
+                    <p className="text-sm font-semibold">{item.label}</p>
+                    <p className="whitespace-pre-line text-sm text-muted-foreground">{item.value}</p>
                   </div>
                 </div>
               ))}
 
-              {/* Map placeholder */}
-              <div className="mt-8 aspect-video rounded-lg border border-border bg-section-bg flex items-center justify-center">
-                <p className="text-sm text-muted-foreground">Map Coming Soon</p>
+              <div className="rounded-xl border border-border bg-section-bg p-6">
+                <p className="text-sm font-semibold">Service area</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Toronto, Mississauga, Vaughan, Markham, Richmond Hill, Brampton, Oakville, Burlington, Ajax,
+                  Pickering, Oshawa, Aurora, Newmarket, and surrounding Ontario.
+                </p>
               </div>
             </div>
 
-            {/* Forms */}
             <div className="lg:col-span-2">
-              <Tabs defaultValue="general">
+              <Tabs value={tab} onValueChange={setTab}>
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="general">Service Request</TabsTrigger>
+                  <TabsTrigger value="general">Quote</TabsTrigger>
                   <TabsTrigger value="handyman">Handyman</TabsTrigger>
                   <TabsTrigger value="membership">Membership</TabsTrigger>
                 </TabsList>
 
-                {/* General Service Request */}
                 <TabsContent value="general">
-                  <form onSubmit={handleSubmit("general")} className="mt-6 space-y-4">
+                  <form onSubmit={handleSubmit("general")} className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6 shadow-card md:p-8">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div><Label htmlFor="g-name">Name *</Label><Input id="g-name" required placeholder="Your full name" /></div>
-                      <div><Label htmlFor="g-email">Email *</Label><Input id="g-email" type="email" required placeholder="email@example.com" /></div>
-                      <div><Label htmlFor="g-phone">Phone *</Label><Input id="g-phone" type="tel" required placeholder="(123) 456-7890" /></div>
-                      <div><Label htmlFor="g-address">Address</Label><Input id="g-address" placeholder="Your address" /></div>
+                      <div><Label htmlFor="g-name">Name *</Label><Input id="g-name" name="name" required maxLength={100} placeholder="Your full name" /></div>
+                      <div><Label htmlFor="g-email">Email *</Label><Input id="g-email" name="email" type="email" required maxLength={255} placeholder="email@example.com" /></div>
+                      <div><Label htmlFor="g-phone">Phone *</Label><Input id="g-phone" name="phone" type="tel" required maxLength={30} placeholder="(123) 456-7890" /></div>
+                      <div><Label htmlFor="g-address">Address</Label><Input id="g-address" name="address" maxLength={200} placeholder="Your address" /></div>
                     </div>
                     <div>
-                      <Label>Service Type</Label>
-                      <Select>
+                      <Label>Service type</Label>
+                      <Select name="service">
                         <SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="maintenance">Home Maintenance</SelectItem>
-                          <SelectItem value="handyman">Handyman Services</SelectItem>
-                          <SelectItem value="renovation">Renovations & Construction</SelectItem>
-                          <SelectItem value="seasonal">Seasonal Maintenance</SelectItem>
+                          <SelectItem value="renovation">Renovation</SelectItem>
+                          <SelectItem value="maintenance">Maintenance</SelectItem>
+                          <SelectItem value="handyman">Handyman</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div><Label htmlFor="g-desc">Description</Label><Textarea id="g-desc" placeholder="Tell us about your project..." rows={4} /></div>
+                    <div><Label htmlFor="g-desc">Project description</Label><Textarea id="g-desc" name="description" maxLength={2000} placeholder="Tell us about your project…" rows={4} /></div>
                     <Button type="submit" size="lg">{submitted === "general" ? "Sent ✓" : "Submit Request"}</Button>
                   </form>
                 </TabsContent>
 
-                {/* Handyman */}
                 <TabsContent value="handyman">
-                  <form onSubmit={handleSubmit("handyman")} className="mt-6 space-y-4">
+                  <form onSubmit={handleSubmit("handyman")} className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6 shadow-card md:p-8">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label>Task Type</Label>
-                        <Select>
-                          <SelectTrigger><SelectValue placeholder="Select task" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="repair">Repairs</SelectItem>
-                            <SelectItem value="plumbing">Plumbing</SelectItem>
-                            <SelectItem value="electrical">Electrical</SelectItem>
-                            <SelectItem value="carpentry">Carpentry</SelectItem>
-                            <SelectItem value="painting">Painting</SelectItem>
-                            <SelectItem value="outdoor">Outdoor Work</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Urgency</Label>
-                        <Select>
-                          <SelectTrigger><SelectValue placeholder="Select urgency" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low — Flexible timing</SelectItem>
-                            <SelectItem value="medium">Medium — Within a week</SelectItem>
-                            <SelectItem value="high">High — ASAP</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <div><Label htmlFor="h-name">Name *</Label><Input id="h-name" name="name" required maxLength={100} /></div>
+                      <div><Label htmlFor="h-phone">Phone *</Label><Input id="h-phone" name="phone" type="tel" required maxLength={30} /></div>
+                      <div><Label htmlFor="h-email">Email *</Label><Input id="h-email" name="email" type="email" required maxLength={255} /></div>
+                      <div><Label htmlFor="h-date">Preferred date</Label><Input id="h-date" name="date" type="date" /></div>
                     </div>
-                    <div><Label htmlFor="h-date">Preferred Date</Label><Input id="h-date" type="date" /></div>
-                    <div><Label htmlFor="h-desc">Description</Label><Textarea id="h-desc" placeholder="Describe the task..." rows={4} /></div>
-                    <Button type="submit" size="lg">{submitted === "handyman" ? "Sent ✓" : "Request Handyman"}</Button>
+                    <div>
+                      <Label>Hours needed</Label>
+                      <Select name="hours">
+                        <SelectTrigger><SelectValue placeholder="Select hours" /></SelectTrigger>
+                        <SelectContent>
+                          {[1,2,3,4,5,6,8].map((h) => (<SelectItem key={h} value={String(h)}>{h} hour{h>1?"s":""}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div><Label htmlFor="h-desc">Task description *</Label><Textarea id="h-desc" name="description" maxLength={2000} required placeholder="What needs to get done?" rows={4} /></div>
+                    <Button type="submit" size="lg">{submitted === "handyman" ? "Sent ✓" : "Book Handyman"}</Button>
                   </form>
                 </TabsContent>
 
-                {/* Membership */}
                 <TabsContent value="membership">
-                  <form onSubmit={handleSubmit("membership")} className="mt-6 space-y-4">
+                  <form onSubmit={handleSubmit("membership")} className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6 shadow-card md:p-8">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div><Label htmlFor="m-name">Name *</Label><Input id="m-name" required placeholder="Your full name" /></div>
-                      <div><Label htmlFor="m-email">Email *</Label><Input id="m-email" type="email" required placeholder="email@example.com" /></div>
-                      <div><Label htmlFor="m-phone">Phone *</Label><Input id="m-phone" type="tel" required placeholder="(123) 456-7890" /></div>
+                      <div><Label htmlFor="m-name">Name *</Label><Input id="m-name" name="name" required maxLength={100} /></div>
+                      <div><Label htmlFor="m-email">Email *</Label><Input id="m-email" name="email" type="email" required maxLength={255} /></div>
+                      <div><Label htmlFor="m-phone">Phone *</Label><Input id="m-phone" name="phone" type="tel" required maxLength={30} /></div>
                       <div>
-                        <Label>Property Type</Label>
-                        <Select>
+                        <Label>Plan</Label>
+                        <Select name="plan" defaultValue={params.get("plan") || undefined}>
+                          <SelectTrigger><SelectValue placeholder="Select a plan" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Basic Plan">Basic — $99/mo</SelectItem>
+                            <SelectItem value="Pro Plan">Pro — $149/mo</SelectItem>
+                            <SelectItem value="Elite Plan">Elite — $199/mo</SelectItem>
+                            <SelectItem value="not-sure">Not sure yet</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Property type</Label>
+                        <Select name="propertyType">
                           <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="house">House</SelectItem>
@@ -153,38 +186,18 @@ const ContactPage = () => {
                         </Select>
                       </div>
                       <div>
-                        <Label>Home Size</Label>
-                        <Select>
+                        <Label>Home size</Label>
+                        <Select name="homeSize">
                           <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="small">Small (under 1,500 sqft)</SelectItem>
-                            <SelectItem value="medium">Medium (1,500–3,000 sqft)</SelectItem>
-                            <SelectItem value="large">Large (3,000+ sqft)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Plan</Label>
-                        <Select>
-                          <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="basic">Basic Care — $99/mo</SelectItem>
-                            <SelectItem value="premium">Premium Care — $149/mo</SelectItem>
+                            <SelectItem value="small">Under 1,500 sqft</SelectItem>
+                            <SelectItem value="medium">1,500–3,000 sqft</SelectItem>
+                            <SelectItem value="large">3,000+ sqft</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
-                    <div>
-                      <Label>Preferred Schedule</Label>
-                      <Select>
-                        <SelectTrigger><SelectValue placeholder="Select preference" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">Morning</SelectItem>
-                          <SelectItem value="afternoon">Afternoon</SelectItem>
-                          <SelectItem value="flexible">Flexible</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <div><Label htmlFor="m-notes">Anything else?</Label><Textarea id="m-notes" name="description" maxLength={2000} rows={3} /></div>
                     <Button type="submit" size="lg">{submitted === "membership" ? "Sent ✓" : "Join Membership"}</Button>
                   </form>
                 </TabsContent>
