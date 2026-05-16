@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" width="200" height="56">
+  <!-- Replace this file with your real logo SVG -->
+  <rect x="0" y="0" width="48" height="48" rx="8" fill="#F36F21"/>
+  <path d="M12 32 L24 18 L36 32 Z M16 32 L16 40 L32 40 L32 32" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="58" y="26" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="20" fill="#2D2D2D">Home</text>
+  <text x="58" y="46" font-family="Plus Jakarta Sans, sans-serif" font-weight="800" font-size="20" fill="#F36F21">Fixers</text>
+</svg>
